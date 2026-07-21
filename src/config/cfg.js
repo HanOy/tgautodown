@@ -53,6 +53,12 @@ export class Config {
     const cliNames  = cli.strings('names', '', []);
     const cliHttp   = cli.str('httpaddr', '', '');
 
+    // Env vars (for Docker / systemd where CLI flags are awkward).
+    const envProxy  = process.env.TG_PROXY  || '';
+    const envF2a    = process.env.TG_F2A    || '';
+    const envNames  = process.env.TG_NAMES  || '';
+    const envHttp   = process.env.TG_HTTPADDR || '';
+
     // Resolve config file path (CLI override of default location).
     const defaultCfgPath = path.join(this.cfgdir, 'config.json');
     this.cfgPath = cliCfg || defaultCfgPath;
@@ -75,12 +81,16 @@ export class Config {
     this.sessionPath = path.resolve(this.cfgdir, 'session.json');
     this.cfgdir      = path.resolve(this.cfgdir);
 
-    // CLI flags win over file config
+    // CLI flags win over file config; env vars come after CLI (lower priority).
     if (cliProxy)             this.socks5   = cliProxy;
     if (cliF2a)               this.f2aPwd   = cliF2a;
     if (cliRetry > 0)         this.retryCnt = cliRetry;
     if (cliNames.length)      this.channels = cliNames;
     if (cliHttp)              this.httpaddr = cliHttp;
+    if (envProxy && !cliProxy)        this.socks5   = envProxy;
+    if (envF2a && !cliF2a)            this.f2aPwd   = envF2a;
+    if (envNames && !cliNames.length) this.channels = envNames.split(',').map((s) => s.trim()).filter(Boolean);
+    if (envHttp && !cliHttp)          this.httpaddr = envHttp;
 
     log.setLevel(this.loglevel);
     log.info('cfg loaded', JSON.stringify({ ...this, sessionPath: this.sessionPath }));
