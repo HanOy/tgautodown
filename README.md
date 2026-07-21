@@ -73,6 +73,122 @@ npm run dev
 -h, --help
 ```
 
+## Docker 部署
+
+镜像已发布到 Docker Hub：`hanoyang/tgautodown-js`，支持 `linux/amd64` 与 `linux/arm64`。
+
+### 快速启动（裸跑）
+
+```bash
+docker run -d --name tgautodown \
+  --restart unless-stopped \
+  -p 2020:2020 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/download:/app/download \
+  -v $(pwd)/bin:/app/bin \
+  -e TZ=Asia/Shanghai \
+  -e TG_PROXY=socks5://host.docker.internal:10808 \
+  hanoyang/tgautodown-js:latest
+```
+
+启动后浏览器打开 <http://localhost:2020> 完成首次 TG 登录。
+
+### docker-compose 部署
+
+`docker-compose.yml`：
+
+```yaml
+services:
+  app:
+    image: hanoyang/tgautodown-js:latest
+    container_name: tgautodown
+    restart: unless-stopped
+    ports:
+      - "2020:2020"
+    volumes:
+      - ./data:/app/data           # 配置 + session
+      - ./download:/app/download   # 下载文件
+      - ./bin:/app/bin             # gopeed 等外部工具
+    environment:
+      - TZ=Asia/Shanghai
+      # SOCKS5 出站代理（连 Telegram 用）
+      - TG_PROXY=socks5://host.docker.internal:10808
+      # 频道列表（逗号分隔，私有前加 +）
+      - TG_NAMES=+channel1,+channel2
+      # 2FA 云密码（不走 Web UI 时用）
+      - TG_F2A=your-password
+      # 监听端口（默认 :2020）
+      - TG_HTTPADDR=:2020
+```
+
+```bash
+docker compose up -d
+docker compose logs -f
+```
+
+### 环境变量优先级
+
+命令行参数 > 环境变量 > `config.json`
+
+| 环境变量 | 对应 CLI | 对应 config.json 字段 |
+|---|---|---|
+| `TG_PROXY` | `-proxy` | `socks5` |
+| `TG_NAMES` | `-names` | `channels` |
+| `TG_F2A` | `-f2a` | `f2aPwd` |
+| `TG_HTTPADDR` | `-httpaddr` | `httpaddr` |
+
+### 容器内访问宿主机服务
+
+| 场景 | socks5 地址写法 |
+|---|---|
+| Docker Desktop（Win/Mac），socks5 在宿主机 | `host.docker.internal:10808` |
+| Linux 宿主机，socks5 在宿主机 | `172.17.0.1:10808`（docker bridge gateway） |
+| socks5 在另一个 docker 服务 | `<service-name>:10808` |
+| socks5 在同网络另一台机器 | `<ip>:10808` |
+| socks5 在公网 | 直接用域名或 IP |
+
+### 反向代理（公网 + HTTPS）
+
+如需对外暴露并启用 HTTPS，建议用 Caddy（自动申请证书）：
+
+```yaml
+# 加到上面的 compose 文件里
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+```
+
+`Caddyfile`：
+
+```caddy
+tg.example.com {
+    reverse_proxy app:2020
+}
+```
+
+Caddy 自动向 Let's Encrypt 申请证书。
+
+### 镜像信息
+
+| 项 | 值 |
+|---|---|
+| 基础镜像 | `node:20-alpine` |
+| 体积 | ~150 MB |
+| 入口点 | `/sbin/tini -- node src/main.js -cfg /app/data/config.json` |
+| 暴露端口 | `2020/tcp` |
+| 健康检查 | `wget http://127.0.0.1:2020/tgad/login/status`（30s 间隔） |
+| 卷 | `/app/data`, `/app/download`, `/app/bin` |
+| 运行用户 | 非 root `tgad` |
+
 ## HTTP API
 
 | 方法 | 路径 | 请求体 | 用途 |
