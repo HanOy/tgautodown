@@ -1,0 +1,17 @@
+node_modules/
+data/
+download/
+test/
+.github/
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+*.md
+*.log
+.DS_Store
+.vscode/
+.idea/
+coverage/
+*.test.js
