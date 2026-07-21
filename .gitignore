@@ -1,0 +1,8 @@
+node_modules/
+data/
+download/
+*.log
+.env
+.DS_Store
+.vscode/
+.idea/

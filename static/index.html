@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TG 登录系统</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <header><h1>TG 登录系统 (tgautodown-js)</h1></header>
+
+    <main>
+      <section id="status-box" class="card">
+        <h2>当前状态</h2>
+        <div id="status-content">加载中…</div>
+      </section>
+
+      <section id="user-form" class="card hidden">
+        <h2>1. 提交登录信息</h2>
+        <p class="hint">AppID / AppHash 在 <a href="https://core.telegram.org/api/obtaining_api_id" target="_blank">这里</a> 申请。</p>
+        <form id="login-user-form">
+          <label>App ID <input name="appid" type="number" required></label>
+          <label>App Hash <input name="apphash" type="text" required></label>
+          <label>手机号 <input name="phone" type="tel" required placeholder="+8613800000000"></label>
+          <button type="submit">提交并连接</button>
+        </form>
+      </section>
+
+      <section id="code-form" class="card hidden">
+        <h2>2. 输入短信验证码</h2>
+        <p class="hint">请查看 Telegram 客户端收到的登录码。</p>
+        <form id="login-code-form">
+          <label>验证码 <input name="code" type="text" required autocomplete="one-time-code"></label>
+          <button type="submit">提交验证码</button>
+        </form>
+      </section>
+
+      <section id="password-form" class="card hidden">
+        <h2>3. 输入两步验证密码</h2>
+        <p class="hint">该账号启用了 2FA，请输入云密码。<span id="pwd-hint"></span></p>
+        <form id="login-password-form">
+          <label>云密码 <input name="password" type="password" required autocomplete="current-password"></label>
+          <button type="submit">提交</button>
+          <div id="pwd-error" class="status-error" style="font-size:13px; margin-top:8px;"></div>
+        </form>
+      </section>
+
+      <section id="success-box" class="card hidden">
+        <h2>登录成功</h2>
+        <p id="success-info"></p>
+      </section>
+
+      <section id="channels-box" class="card">
+        <h2>订阅频道</h2>
+        <p class="hint">私有频道前需加 <code>+</code>，例如 <code>+abc123def</code>。多个以逗号分隔。</p>
+        <form id="channels-form">
+          <label>频道 <input name="channels" type="text" placeholder="+abc,+公开频道名"></label>
+          <button type="submit">保存</button>
+        </form>
+        <pre id="channels-current"></pre>
+      </section>
+
+      <section id="send-box" class="card hidden">
+        <h2>发送消息</h2>
+        <p class="hint">向已订阅或任意指定频道发送文本。可选填回复的消息 ID。</p>
+        <form id="send-form">
+          <label>目标频道
+            <select name="channel" id="send-channel-select">
+              <option value="">— 已解析频道 —</option>
+            </select>
+          </label>
+          <label>或手动输入频道名/邀请码
+            <input name="channelOverride" type="text" placeholder="+invitehash 或 @public_name（覆盖下拉选择）">
+          </label>
+          <label>回复消息 ID（可选）
+            <input name="replyTo" type="number" placeholder="例如 12345">
+          </label>
+          <label>消息内容
+            <textarea name="text" rows="4" required placeholder="要发送的文字…"></textarea>
+          </label>
+          <button type="submit">发送</button>
+          <div id="send-result" class="status-error" style="font-size:13px; margin-top:8px;"></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "tgautodown-js",
+  "version": "1.0.0",
+  "description": "Telegram auto-downloader — Node.js rewrite of tgautodown (Go). Listens to channels/groups and auto-downloads media via MTProto.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "node --watch src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "telegram": "^2.26.7"
+  },
+  "license": "MIT",
+  "author": "",
+  "keywords": ["telegram", "mtproto", "downloader", "tgautodown"]
+}
